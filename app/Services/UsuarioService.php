@@ -87,7 +87,7 @@ class UsuarioService
     public function getUsuarios(int $page = 1, int $size = 10, array $filters = [])
     {
         // Consulta base
-        $query = Usuario::where('enable', true);  // Solo usuarios habilitados
+        $query = Usuario::where('enable', false);  // Solo usuarios habilitados
 
         // Aquí puedes agregar filtros adicionales, si es necesario
         if (isset($filters['usuario'])) {
@@ -195,26 +195,54 @@ class UsuarioService
     {
         try {
             $usuario = Usuario::where('id', $id)
-                            ->where('enable', true) // Solo si está actualmente activo
+                            ->where('enable', true)
                             ->first();
 
             if (!$usuario) {
-                \Log::warning('Intento de deshabilitar usuario inexistente o ya inactivo', ['id' => $id]);
+                $usuarioExistente = Usuario::withTrashed()->find($id);
+                \Log::warning('Intento de deshabilitar usuario', [
+                    'id' => $id,
+                    'exists' => !is_null($usuarioExistente),
+                    'already_disabled' => $usuarioExistente && !$usuarioExistente->enable
+                ]);
+                
                 throw new \Exception(
-                    is_null(Usuario::find($id)) 
+                    is_null($usuarioExistente) 
                         ? "El usuario con ID {$id} no existe"
                         : "El usuario ya está deshabilitado",
                     404
                 );
             }
 
-            $usuario->update(['enable' => false]);
-            \Log::info('Usuario deshabilitado', ['id' => $id]);
+            // Actualización ATÓMICA que garantiza que ambos campos cambien
+            $affected = Usuario::where('id', $id)
+                            ->where('enable', true)
+                            ->update([
+                                'enable' => false,
+                                'deletedAt' => now()->toDateTimeString()
+                            ]);
+
+            if ($affected === 0) {
+                throw new \Exception("No se pudo deshabilitar el usuario", 500);
+            }
+
+            // Recargamos el modelo actualizado
+            $usuario = Usuario::withTrashed()->find($id);
+            
+            \Log::info('Usuario deshabilitado', [
+                'id' => $id,
+                'deletedAt' => $usuario->deletedAt,
+                'enable' => $usuario->enable
+            ]);
             
             return $usuario;
 
         } catch (\Exception $e) {
-            \Log::error('Error al deshabilitar usuario: ' . $e->getMessage(), ['id' => $id]);
+            \Log::error('Error al deshabilitar usuario', [
+                'id' => $id,
+                'error' => $e->getMessage(),
+                'stack' => $e->getTraceAsString()
+            ]);
             throw $e;
         }
     }
