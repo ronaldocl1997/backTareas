@@ -22,14 +22,15 @@ return new class extends Migration
             
             // Relación con categorías
             $table->foreignUuid('categoria_id')
-                  ->constrained('categorias')
-                  ->onDelete('restrict');
+                ->constrained('categorias')
+                ->onDelete('cascade');
             
             // Relación con usuarios
             $table->foreignUuid('usuario_id')
-                  ->constrained('usuarios')
-                  ->onDelete('cascade');
+                ->constrained('usuarios')
+                ->onDelete('cascade');
             
+            // Timestamps consistentes con tus otras tablas
             $table->datetime('createdAt')->useCurrent();
             $table->datetime('updatedAt')->useCurrent()->useCurrentOnUpdate();
             $table->datetime('deletedAt')->nullable();
@@ -41,6 +42,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('categorias');
+        Schema::dropIfExists('tareas');
     }
 };

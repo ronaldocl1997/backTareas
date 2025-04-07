@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\CategoriaController;
+use App\Http\Controllers\TareaController;
 
 
 
@@ -24,7 +25,6 @@ Route::patch('/usuarios/{id}/disable', [UsuarioController::class, 'disableUsuari
 
 Route::patch('/usuarios/{id}/enable', [UsuarioController::class, 'enableUsuario']);
 
-//----------------------------------------------------------------------------------//
 
 //---------apis categorias----------------------------------------------------------//
 
@@ -35,8 +35,16 @@ Route::get('/categoria', [CategoriaController::class, 'getCategorias']);
 Route::put('/categoria/{id}', [CategoriaController::class, 'updateCategoria']);
 
 Route::patch('/categoria/{id}/disable', [CategoriaController::class, 'disableCategoria']);
-//----------------------------------------------------------------------------------------//
 
+//---------apis tareas----------------------------------------------------------//
+
+Route::post('/tarea', [TareaController::class, 'create']);
+
+Route::get('/tarea', [TareaController::class, 'getTareas']);
+
+Route::put('/tarea/{id}', [TareaController::class, 'updateTarea']);
+
+Route::patch('/tarea/{id}/disable', [TareaController::class, 'disableTarea']);
 
 
 

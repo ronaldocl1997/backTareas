@@ -10,13 +10,7 @@ use Illuminate\Validation\Rule;
 
 class UsuarioService
 {
-    /**
-     * Crear un nuevo usuario con validaciones.
-     *
-     * @param array $data
-     * @return Usuario
-     * @throws ValidationException
-     */
+
     public function createUsuario(array $data)
     {
         $validator = Validator::make($data, [

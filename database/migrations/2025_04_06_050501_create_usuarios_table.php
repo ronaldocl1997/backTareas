@@ -19,10 +19,10 @@ return new class extends Migration
             $table->string('apellido_materno', 50)->nullable();
             $table->string('password');
             $table->foreignUuid('rol_id')->constrained('roles');
-            $table->boolean('enable')->default(true); // true=activo, false=inactivo
-            $table->datetime('createdAt')->useCurrent(); // Fecha creación en UTC
-            $table->datetime('updatedAt')->useCurrent()->useCurrentOnUpdate(); // Fecha actualización
-            $table->datetime('deletedAt')->nullable(); // Fecha borrado lógico
+            $table->boolean('enable')->default(true);
+            $table->datetime('createdAt')->useCurrent();
+            $table->datetime('updatedAt')->useCurrent()->useCurrentOnUpdate();
+            $table->datetime('deletedAt')->nullable();
             $table->rememberToken();
         });
     }
