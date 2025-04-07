@@ -15,7 +15,7 @@ class UsuarioController extends Controller
     public function create(Request $request)
     {
         try {
-            // Llamar al servicio para crear el usuario
+
             $usuario = $this->usuarioService->createUsuario($request->all());
             
             return response()->json(['message' => 'Usuario creado con éxito', 'usuario' => $usuario], 201);
@@ -24,20 +24,14 @@ class UsuarioController extends Controller
         }
     }
 
-     /**
-     * Obtener los usuarios con filtros y paginación, solo aquellos habilitados (enable = true).
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function getUsuarios(Request $request)
     {
         try {
-            // Obtener parámetros de paginación, con valores predeterminados
-            $page = $request->input('page', 1);  // Página por defecto es 1
-            $size = $request->input('size', 10); // Tamaño por defecto es 10
+
+            $page = $request->input('page', 1); 
+            $size = $request->input('size', 10);
             
-            // Obtener parámetros de filtrado
+            // Filtros
             $filters = [
                 'usuario' => $request->input('usuario'),
                 'nombre' => $request->input('nombre'),
@@ -46,27 +40,39 @@ class UsuarioController extends Controller
                 'rol_id' => $request->input('rol_id'),
             ];
             
-            // Filtrar valores nulos
             $filters = array_filter($filters, function($value) {
                 return $value !== null;
             });
 
-            // Llamar al servicio para obtener los usuarios con paginación y filtros
             $usuarios = $this->usuarioService->getUsuarios($page, $size, $filters);
 
+            $usuarios->getCollection()->transform(function ($usuario) {
+                return [
+                    'id' => $usuario->id,
+                    'usuario' => $usuario->usuario,
+                    'nombre' => $usuario->nombre,
+                    'apellido_paterno' => $usuario->apellido_paterno,
+                    'apellido_materno' => $usuario->apellido_materno,
+                    'enable' => $usuario->enable,
+                    'createdAt' => $usuario->createdAt,
+                    'updatedAt' => $usuario->updatedAt,
+                    'rol' => [
+                        'id' => $usuario->rol->id,
+                        'nombre' => $usuario->rol->nombre,
+                    ]
+                ];
+            });
+
             return response()->json($usuarios);
+
         } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 400);
+            return response()->json([
+                'error' => $e->getMessage(),
+                'trace' => config('app.debug') ? $e->getTrace() : null
+            ], 400);
         }
     }
 
-        /**
-     * Actualiza un usuario existente.
-     * 
-     * @param Request $request
-     * @param string $id (UUID del usuario)
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function updateUsuario(Request $request, string $id)
     {
         try {
@@ -78,12 +84,6 @@ class UsuarioController extends Controller
         }
     }
 
-    /**
-     * Eliminación lógica de un usuario (enable = false)
-     * 
-     * @param string $id
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function disableUsuario(string $id)
     {
         try {

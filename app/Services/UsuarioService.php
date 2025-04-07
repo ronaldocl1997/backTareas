@@ -19,7 +19,6 @@ class UsuarioService
      */
     public function createUsuario(array $data)
     {
-        // Validación (incluye regla 'unique')
         $validator = Validator::make($data, [
             'usuario' => ['required', 'string', 'max:30', 'unique:usuarios'],
             'nombre' => 'required|string|max:50',
@@ -27,9 +26,7 @@ class UsuarioService
             'apellido_materno' => 'nullable|string|max:50',
             'password' => 'required|string|min:8',
             'rol_id' => ['required', 'exists:roles,id'],
-            'enable' => 'nullable|boolean',
         ], [
-            // Mensajes personalizados para validación
             'usuario.required' => 'El campo de usuario es obligatorio.',
             'usuario.string' => 'El usuario debe ser una cadena de caracteres.',
             'usuario.max' => 'El nombre de usuario no puede tener más de 30 caracteres.',
@@ -46,10 +43,8 @@ class UsuarioService
             'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
             'rol_id.required' => 'El rol es obligatorio.',
             'rol_id.exists' => 'El rol seleccionado no existe.',
-            'enable.boolean' => 'El campo de habilitación debe ser verdadero o falso.',
         ]);
 
-        // Si la validación falla, lanza la excepción con los errores
         if ($validator->fails()) {
             throw new ValidationException($validator);
         }
@@ -63,33 +58,17 @@ class UsuarioService
             'apellido_materno' => $data['apellido_materno'],
             'password' => bcrypt($data['password']),
             'rol_id' => $data['rol_id'],
-            'enable' => $data['enable'] ?? true,
         ]);
 
         return $usuario;
     }
 
-    /**
-     * Obtener usuarios con filtros y paginación, pero solo los usuarios habilitados (enable = true).
-     *
-     * @param array $filters
-     * @param int $perPage
-     * @return \Illuminate\Pagination\LengthAwarePaginator
-     */
-    /**
-     * Obtener usuarios con filtros y paginación.
-     *
-     * @param int $page
-     * @param int $size
-     * @param array $filters
-     * @return \Illuminate\Pagination\LengthAwarePaginator
-     */
+
     public function getUsuarios(int $page = 1, int $size = 10, array $filters = [])
     {
-        // Consulta base
-        $query = Usuario::where('enable', false);  // Solo usuarios habilitados
 
-        // Aquí puedes agregar filtros adicionales, si es necesario
+        $query = Usuario::where('enable', true);
+
         if (isset($filters['usuario'])) {
             $query->where('usuario', 'like', '%' . $filters['usuario'] . '%');
         }
@@ -110,26 +89,14 @@ class UsuarioService
             $query->where('rol_id', $filters['rol_id']);
         }
 
-
-        // Paginación
         $usuarios = $query->paginate($size, ['*'], 'page', $page);
 
         return $usuarios;
     }
 
-    /**
-     * Actualiza un usuario con validaciones.
-     * 
-     * @param string $id
-     * @param array $data
-     * @return Usuario
-     * @throws \Illuminate\Validation\ValidationException
-     * @throws \Exception
-     */
     public function updateUsuario(string $id, array $data)
     {
         try {
-            // Validación
             $validator = Validator::make($data, [
                 'usuario' => [
                     'sometimes',
@@ -156,7 +123,6 @@ class UsuarioService
                 throw new ValidationException($validator);
             }
 
-            // Buscar usuario
             $usuario = Usuario::find($id);
             
             if (!$usuario) {
@@ -164,7 +130,6 @@ class UsuarioService
                 throw new \Exception("El usuario con ID {$id} no existe", 404);
             }
 
-            // Actualizar campos
             if (isset($data['password'])) {
                 $data['password'] = bcrypt($data['password']);
             }
@@ -184,13 +149,6 @@ class UsuarioService
         }
     }
 
-    /**
-     * Deshabilita un usuario (eliminación lógica)
-     * 
-     * @param string $id
-     * @return Usuario
-     * @throws \Exception
-     */
     public function disableUsuario(string $id)
     {
         try {
@@ -214,7 +172,6 @@ class UsuarioService
                 );
             }
 
-            // Actualización ATÓMICA que garantiza que ambos campos cambien
             $affected = Usuario::where('id', $id)
                             ->where('enable', true)
                             ->update([
@@ -226,7 +183,6 @@ class UsuarioService
                 throw new \Exception("No se pudo deshabilitar el usuario", 500);
             }
 
-            // Recargamos el modelo actualizado
             $usuario = Usuario::withTrashed()->find($id);
             
             \Log::info('Usuario deshabilitado', [
