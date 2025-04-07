@@ -6,15 +6,19 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str; 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Tymon\JWTAuth\Contracts\JWTSubject;
+use Illuminate\Database\Eloquent\Model;
 
-
-class Usuario extends Authenticatable 
+class Usuario extends Authenticatable implements JWTSubject
 {
     use SoftDeletes;
+    use HasFactory;
 
     protected $table = 'usuarios';
     protected $keyType = 'string'; // Para UUID
     public $incrementing = false;
+    protected $primaryKey = 'id';
 
     protected $fillable = [
         'usuario',
@@ -26,7 +30,10 @@ class Usuario extends Authenticatable
         'enable'
     ];
 
-    protected $hidden = ['password'];
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
     protected $casts = [
         'enable' => 'boolean',
         'createdAt' => 'datetime',
@@ -53,5 +60,20 @@ class Usuario extends Authenticatable
     public function rol(): BelongsTo
     {
         return $this->belongsTo(Rol::class);
+    }
+
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+
+    public function getJWTCustomClaims()
+    {
+        return [];
+    }
+
+    public function getAuthIdentifierName()
+    {
+        return 'usuario';
     }
 }
