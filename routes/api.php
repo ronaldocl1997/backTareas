@@ -5,6 +5,7 @@ use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\TareaController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\RolController;
 
 /*
 |--------------------------------------------------------------------------
@@ -50,4 +51,9 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('api.logout');
     Route::post('/refresh', [AuthController::class, 'refresh'])->name('api.refresh');
     Route::get('/me', [AuthController::class, 'me'])->name('api.me');
+
+    // Rutas para roles
+    Route::prefix('roles')->group(function () {
+        Route::get('/', [RolController::class, 'getRoles'])->name('api.roles.index');
+    });
 });
