@@ -23,7 +23,7 @@ class AdminUsuarioSeeder extends Seeder
             'usuario' => 'admin',
             'nombre' => 'Administrador',
             'apellido_paterno' => 'Sistema',
-            'password' => Hash::make('Admin123*'), // Cambia esta contraseña
+            'password' => Hash::make('123456789'), // Cambia esta contraseña
             'rol_id' => $rolAdmin->id,
             'enable' => true,
             'createdAt' => now(),
