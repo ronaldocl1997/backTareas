@@ -19,6 +19,9 @@ use App\Http\Controllers\RolController;
 // Rutas públicas (sin autenticación)
 Route::post('/login', [AuthController::class, 'login'])->name('api.login');
 Route::post('/usuarios', [UsuarioController::class, 'create'])->name('api.usuarios.create');
+Route::prefix('roles')->group(function () {
+    Route::get('/', [RolController::class, 'getRoles'])->name('api.roles.index');
+});
 
 // Rutas protegidas (requieren token JWT válido)
 Route::middleware('auth:api')->group(function () {
@@ -51,9 +54,4 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('api.logout');
     Route::post('/refresh', [AuthController::class, 'refresh'])->name('api.refresh');
     Route::get('/me', [AuthController::class, 'me'])->name('api.me');
-
-    // Rutas para roles
-    Route::prefix('roles')->group(function () {
-        Route::get('/', [RolController::class, 'getRoles'])->name('api.roles.index');
-    });
 });

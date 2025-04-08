@@ -29,10 +29,13 @@ class AuthController extends Controller
             ], 401);
         }
 
+        $user = auth('api')->user();
+        $user->load('rol'); // Carga el rol asociado
+
         return response()->json([
             'status' => 'success',
             'token' => $token,
-            'user' => auth('api')->user(),
+            'user' => $user,
             'token_type' => 'bearer',
             'expires_in' => auth('api')->factory()->getTTL() * 60
         ]);
