@@ -31,7 +31,7 @@ return [
 
     'connections' => [
 
-        'sqlite' => [
+        /* 'sqlite' => [
             'driver' => 'sqlite',
             'url' => env('DB_URL'),
             'database' => env('DB_DATABASE', database_path('database.sqlite')),
@@ -40,7 +40,7 @@ return [
             'busy_timeout' => null,
             'journal_mode' => null,
             'synchronous' => null,
-        ],
+        ], */
 
         'mysql' => [
             'driver' => 'mysql',
